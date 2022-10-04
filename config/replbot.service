@@ -1,0 +1,10 @@
+[Unit]
+Description = replbot - REPL Telegram Bot
+
+[Service]
+ExecStart = python3 bot.py
+WorkingDirectory = /apps/replbot/replbot
+EnvironmentFile = /apps/replbot/replbot.env
+
+[Install]
+WantedBy=default.target
