@@ -100,3 +100,19 @@ class ReplBot:
                 )
             msg = session.new_request(request.message_id, request.text)
             msg.create_task()
+
+def main():
+    import os
+    token = os.getenv("TELEGRAM_BOT_API_TOKEN")
+
+    app = ReplBot(token=token)
+
+    @app.command("/start")
+    def start(request):
+        user = request.user
+        return (f"Welcome {user.first_name}!")
+
+    app.run()
+
+if __name__ == "__main__":
+    main()
