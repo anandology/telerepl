@@ -1,5 +1,6 @@
 """The bot application.
 """
+import asyncio
 from telegram.ext import (
     ApplicationBuilder,
     MessageHandler,
@@ -7,7 +8,7 @@ from telegram.ext import (
     filters
 )
 from .request import Request
-from .db import Session, Message, db
+from .db import Session, Task, db
 
 class ReplBot:
     def __init__(self, token):
@@ -35,7 +36,27 @@ class ReplBot:
         self.app.add_handler(h)
 
     def run(self):
+        loop = asyncio.get_event_loop()
+        task = loop.create_task(self.poll_completed())
         self.app.run_polling()
+
+    async def poll_completed(self):
+        while True:
+            task = Task.find(status="completed", order="id desc")
+            if not task:
+                # wait for 100 ms before retry
+                await asyncio.sleep(1)
+                continue
+
+            if task.stdout or task.stderr:
+                session = task.get_session()
+                msg = f"{task.stdout}{task.stderr}"
+                await self.app.bot.send_message(
+                        chat_id=session.chat_id,
+                        text=msg
+                    )
+            task.mark_archived()
+            await asyncio.sleep(0)
 
     def make_request_handler(self, func):
         async def handle(update, context):

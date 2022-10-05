@@ -28,7 +28,7 @@ create table task (
     session_id integer,
     message_id integer references message,
     message text,
-    status text default 'pending', -- pending, inprogress, complete, sent
+    status text default 'pending', -- pending, inprogress, completed, archived
     exit_status integer,
     stdout text,
     stderr text,
