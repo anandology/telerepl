@@ -52,7 +52,7 @@ class Task(BaseModel):
         return Session.find(id=self.session_id)
 
     def update_status(self, status):
-        db.update("task", status="in-progress", where="id=$id", vars={"id": self.id})
+        db.update("task", status=status, where="id=$id", vars={"id": self.id})
 
     def mark_in_progress(self):
         self.update_status("in-progress")
@@ -84,11 +84,4 @@ class Task(BaseModel):
 
     @classmethod
     def get_completed_tasks(cls, limit=10):
-        with db.transaction():
-            q = "SELECT * FROM task WHERE status='pending' ORDER BY id desc LIMIT 1 FOR UPDATE"
-            result = db.query(q)
-            if not result:
-                return
-            task = Task(result[0])
-            task.update_status("in-progress")
-            return task
+        return Task.find(status="completed", limit=limit)

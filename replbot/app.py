@@ -42,21 +42,37 @@ class ReplBot:
 
     async def poll_completed(self):
         while True:
-            task = Task.find(status="completed", order="id desc")
-            if not task:
-                # wait for 100 ms before retry
-                await asyncio.sleep(1)
-                continue
+            try:
+                task = Task.find(status="completed", order="id desc")
+                if not task:
+                    # wait for 100 ms before retry
+                    await asyncio.sleep(1)
+                    continue
 
-            if task.stdout or task.stderr:
-                session = task.get_session()
-                msg = f"{task.stdout}{task.stderr}"
-                await self.app.bot.send_message(
-                        chat_id=session.chat_id,
-                        text=msg
-                    )
-            task.mark_archived()
-            await asyncio.sleep(0)
+                await self.process_task(task)
+                await asyncio.sleep(0)
+            except Exception as e:
+                print("ERROR:", e)
+
+    async def process_task(self, task):
+        print("task:", task)
+        session = task.get_session()
+
+        if task.stdout or task.stderr:
+            msg = f"{task.stdout}{task.stderr}"
+            await self.app.bot.send_message(
+                    chat_id=session.chat_id,
+                    text=msg
+                )
+        if task.image_path:
+            print("image_path", task.image_path)
+            await self.app.bot.send_photo(
+                    chat_id=session.chat_id,
+                    photo=open(task.image_path, "rb")
+                )
+
+        task.mark_archived()
+
 
     def make_request_handler(self, func):
         async def handle(update, context):
