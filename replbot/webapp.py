@@ -10,6 +10,7 @@ def get_task():
         session = task.get_session()
         d = {
             "id": task.id,
+            "session_id": task.session_id,
             "code": task.message,
             "state_path": session.state_path,
             "task_url": f"/tasks/{task.id}"

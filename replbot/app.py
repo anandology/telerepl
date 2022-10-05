@@ -83,5 +83,4 @@ class ReplBot:
                     username=user.username
                 )
             msg = session.new_request(request.message_id, request.text)
-            task = msg.create_task()
-            return f"Created new message: {dict(msg)}\n\nand task: {dict(task)}"
+            msg.create_task()
